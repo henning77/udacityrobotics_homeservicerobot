@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 
   // Define a position and orientation for the robot to reach
   pickup.target_pose.pose.position.x = 0.0;
-  pickup.target_pose.pose.position.y = 4.0;
+  pickup.target_pose.pose.position.y = 5.0;
   pickup.target_pose.pose.orientation.w = 1.0;
 
    // Send the pickup position and orientation for the robot to reach
