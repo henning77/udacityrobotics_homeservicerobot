@@ -2,6 +2,18 @@
 
 This project is my implementation of the "Home Service Robot" project from the Udacity "Robotics Software Engineer" nanodegree.
 
+## test_slam.sh
+
+To test if SLAM is working correctly, run `src/scripts/test_slam.sh`.
+You might need to adapt TURTLEBOT_GAZEBO_WORLD_FILE to point to the proper world file.
+
+## test_nagigation.sh
+
+To test if AMCL is working correctly, run `src/scripts/test_navigation.sh`.
+As above, you might need to adapt the path variables.
+
+If the map is not aligned, you might need to adapt the robot's initial pose using the "2D Pose estimate" button in rviz.
+
 ## Packages used
 
 * gmapping: https://github.com/ros-perception/slam_gmapping
