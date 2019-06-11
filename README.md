@@ -21,6 +21,12 @@ Will direct the robot to a pickup and dropoff locations.
 
 *Note:* As described above, you might need to perform "2D Pose Estimation" to align the map first.
 
+## add_markers.sh
+
+Will add markers at pickup and dropoff locations.
+
+*Note:* You need to add a Marker in rviz to see it.
+
 ## Packages used
 
 * gmapping: https://github.com/ros-perception/slam_gmapping
