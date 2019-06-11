@@ -1,34 +1,27 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 
-int main( int argc, char** argv )
-{
-  ros::init(argc, argv, "add_markers");
-  ros::NodeHandle n;
-  ros::Rate r(1);
-  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+// 0=Show pickup marker, 1=Hide marker, 2=Show dropoff marker
+int phase = 0;
 
-  // Set our initial shape type to be a cube
-  uint32_t shape = visualization_msgs::Marker::CUBE;
-  
-  // 0=Show pickup marker, 1=Hide marker, 2=Show dropoff marker
-  int phase = 0;
+float pickup_x = -0.5;
+float pickup_y = 5.0;
+float dropoff_x = 0.0;
+float dropoff_y = 1.0;
 
-  while (ros::ok())
-  {
-    visualization_msgs::Marker marker;
-    // Set the frame ID and timestamp.  See the TF tutorials for information on these.
+uint32_t shape = visualization_msgs::Marker::CUBE;
+visualization_msgs::Marker marker;
+
+void update_marker() {
     marker.header.frame_id = "/map";
     marker.header.stamp = ros::Time::now();
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
-    // Any marker sent with the same namespace and id will overwrite the old one
     marker.ns = "basic_shapes";
     marker.id = 0;
 
-    // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
     marker.type = shape;
-    
+
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     if (phase == 0) {
         ROS_INFO("Adding pickup marker");
@@ -37,8 +30,8 @@ int main( int argc, char** argv )
         marker.action = visualization_msgs::Marker::ADD;
 
         // Pickup location
-        marker.pose.position.x = 0;
-        marker.pose.position.y = 5.0;
+        marker.pose.position.x = pickup_x;
+        marker.pose.position.y = pickup_y;
         marker.pose.position.z = 0;
     } else if (phase == 1) {
         ROS_INFO("Hiding marker");
@@ -49,11 +42,11 @@ int main( int argc, char** argv )
         marker.action = visualization_msgs::Marker::ADD;
 
         // Dropoff location
-        marker.pose.position.x = 0;
-        marker.pose.position.y = 1.0;
+        marker.pose.position.x = dropoff_x;
+        marker.pose.position.y = dropoff_y;
         marker.pose.position.z = 0;
     }
-    
+
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
@@ -75,35 +68,50 @@ int main( int argc, char** argv )
     // Publish the marker
     while (marker_pub.getNumSubscribers() < 1)
     {
-      if (!ros::ok())
-      {
+        if (!ros::ok())
+        {
         return 0;
-      }
-      ROS_WARN_ONCE("Please create a subscriber to the marker");
-      sleep(1);
+        }
+        ROS_WARN_ONCE("Please create a subscriber to the marker");
+        sleep(1);
     }
     marker_pub.publish(marker);
+}
 
-    // Go to next phase
-    phase = (phase + 1) % 3;
+void callback_odom(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    float pose_x = msg->pose.pose.position.x;
+    float pose_y = msg->pose.pose.position.y;
 
-    // Cycle between different shapes
-    // switch (shape)
-    // {
-    // case visualization_msgs::Marker::CUBE:
-    //   shape = visualization_msgs::Marker::SPHERE;
-    //   break;
-    // case visualization_msgs::Marker::SPHERE:
-    //   shape = visualization_msgs::Marker::ARROW;
-    //   break;
-    // case visualization_msgs::Marker::ARROW:
-    //   shape = visualization_msgs::Marker::CYLINDER;
-    //   break;
-    // case visualization_msgs::Marker::CYLINDER:
-    //   shape = visualization_msgs::Marker::CUBE;
-    //   break;
-    // }
+    float dist_pickup = abs(pose_x - pickup_x) + abs(pose_y - pickup_y);
+    float dist_dropoff = abs(pose_x - dropoff_x) + abs(pose_y - dropoff_y);
 
-    ros::Duration(5.0).sleep();
-  }
+    if (dist_pickup < 0.05) {
+        ROS_INFO("Arrived at pickup");
+        if (phase == 0) {
+            phase++;
+            update_marker();
+        }
+    }
+    if (dist_dropoff < 0.05) {
+        ROS_INFO("Arrived at dropoff");
+        if (phase == 1) {
+            phase++;
+            update_marker();
+        }
+    }
+}
+
+int main( int argc, char** argv )
+{
+    ros::init(argc, argv, "add_markers");
+    ros::NodeHandle n;
+    ros::Rate r(1);
+    ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+    ros::Subscriber odom_sub = n.subscribe("/odom", 10, callback_odom);
+
+    // Show pickup marker
+    update_marker();
+
+    ros::spin();
 }
