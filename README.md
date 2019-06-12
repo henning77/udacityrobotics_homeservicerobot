@@ -27,12 +27,16 @@ Will add markers at pickup and dropoff locations.
 
 *Note:* You need to add a Marker in rviz to see it.
 
+## home_service.sh
+
+Will simulate pickup and dropoff of the robot.
+
 ## Packages used
 
-* gmapping: https://github.com/ros-perception/slam_gmapping
-* turtlebot_teleop: https://github.com/turtlebot/turtlebot
-* turtlebot_rviz_launchers: https://github.com/turtlebot/turtlebot_interactions
-* turtlebot_gazebo: https://github.com/turtlebot/turtlebot_simulator
+* gmapping for SLAM: https://github.com/ros-perception/slam_gmapping
+* turtlebot_teleop for keyboard control (not used): https://github.com/turtlebot/turtlebot
+* turtlebot_rviz_launchers for rviz configurations: https://github.com/turtlebot/turtlebot_interactions
+* turtlebot_gazebo for the turtlebot simulation: https://github.com/turtlebot/turtlebot_simulator
 
 To install all required packages, run:
 ```
