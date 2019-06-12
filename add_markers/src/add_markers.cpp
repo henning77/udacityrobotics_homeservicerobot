@@ -1,5 +1,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include "nav_msgs/Odometry.h"
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 // 0=Show pickup marker, 1=Hide marker, 2=Show dropoff marker
 int phase = 0;
@@ -11,6 +13,8 @@ float dropoff_y = 1.0;
 
 uint32_t shape = visualization_msgs::Marker::CUBE;
 visualization_msgs::Marker marker;
+
+ros::Publisher marker_pub;
 
 void update_marker() {
     marker.header.frame_id = "/map";
@@ -70,7 +74,7 @@ void update_marker() {
     {
         if (!ros::ok())
         {
-        return 0;
+            return;
         }
         ROS_WARN_ONCE("Please create a subscriber to the marker");
         sleep(1);
@@ -78,7 +82,7 @@ void update_marker() {
     marker_pub.publish(marker);
 }
 
-void callback_odom(const nav_msgs::Odometry::ConstPtr &msg)
+void callback_pose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
     float pose_x = msg->pose.pose.position.x;
     float pose_y = msg->pose.pose.position.y;
@@ -87,15 +91,17 @@ void callback_odom(const nav_msgs::Odometry::ConstPtr &msg)
     float dist_dropoff = abs(pose_x - dropoff_x) + abs(pose_y - dropoff_y);
 
     if (dist_pickup < 0.05) {
-        ROS_INFO("Arrived at pickup");
+        ROS_INFO("At pickup");
         if (phase == 0) {
+            ROS_INFO("Will pick up marker");
             phase++;
             update_marker();
         }
     }
     if (dist_dropoff < 0.05) {
-        ROS_INFO("Arrived at dropoff");
+        ROS_INFO("At dropoff");
         if (phase == 1) {
+            ROS_INFO("Will drop off marker");
             phase++;
             update_marker();
         }
@@ -107,11 +113,12 @@ int main( int argc, char** argv )
     ros::init(argc, argv, "add_markers");
     ros::NodeHandle n;
     ros::Rate r(1);
-    ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
-    ros::Subscriber odom_sub = n.subscribe("/odom", 10, callback_odom);
+    marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+    ros::Subscriber odom_sub = n.subscribe("/amcl_pose", 10, callback_pose);
 
     // Show pickup marker
     update_marker();
 
     ros::spin();
+    return 0;
 }
