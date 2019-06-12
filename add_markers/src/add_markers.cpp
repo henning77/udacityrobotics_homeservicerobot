@@ -90,7 +90,7 @@ void callback_pose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg
     float dist_pickup = abs(pose_x - pickup_x) + abs(pose_y - pickup_y);
     float dist_dropoff = abs(pose_x - dropoff_x) + abs(pose_y - dropoff_y);
 
-    if (dist_pickup < 0.05) {
+    if (dist_pickup < 0.02) {
         ROS_INFO("At pickup");
         if (phase == 0) {
             ROS_INFO("Will pick up marker");
@@ -98,7 +98,7 @@ void callback_pose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg
             update_marker();
         }
     }
-    if (dist_dropoff < 0.05) {
+    if (dist_dropoff < 0.02) {
         ROS_INFO("At dropoff");
         if (phase == 1) {
             ROS_INFO("Will drop off marker");
